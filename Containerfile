@@ -4,7 +4,7 @@ COPY build_files /
 COPY system_files /system_files
 
 # Base Image
-FROM ghcr.io/ublue-os/bazzite:stable
+FROM quay.io/fedora/fedora-kinoite:44
 ## Other possible base images include:
 # FROM ghcr.io/ublue-os/bazzite:testing
 # FROM ghcr.io/ublue-os/aurora:stable
@@ -31,10 +31,15 @@ FROM ghcr.io/ublue-os/bazzite:stable
 ## the following RUN directive does all the things required to run "build.sh" as recommended.
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
-    --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/log \
-    --mount=type=tmpfs,dst=/tmp \
     /ctx/build.sh
+
+### CLEANUP
+## Remove runtime-only and transient files left by package installs.
+RUN rm -rf /run/akmods /run/dnf /run/setrans \
+    && rm -rf /var/log/ \
+    && rm -rf /var/cache/ \
+    && rm -rf /var/lib/dnf \
+    && rm -f /var/lib/xkb/README.compiled
 
 ### LINTING
 ## Verify final image and contents are correct.
